@@ -12,4 +12,7 @@ export const DashboardBase = styled.section<DashboardBaseProps>`
     height: ${(props) => `${props.$height}px`};
     background-color: ${(props) => props.$background};
     border-radius: ${(props) => `${props.$radius}px`};
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 `;

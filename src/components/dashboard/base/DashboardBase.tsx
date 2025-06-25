@@ -1,4 +1,6 @@
 import * as _ from './style.ts'
+import {useRef} from "react";
+import DashboardNode from "../node/DashboardNode.tsx";
 
 type Props = {
     width: number
@@ -7,14 +9,34 @@ type Props = {
     row: number
     background?: string
     radius?: number
+    gap?: number
 }
 
 const DashboardBase = (props: Props) => {
-
+    // const sectionCount = useRef((props.column !=0 ? props.column : 1) * (props.row !=0 ? props.row : 1))
+    const width = useRef(props.width/props.column)
+    const height = useRef(props.height/props.row)
+    const gap = useRef(props.gap == null ? 8 : props.gap)
 
     return (
-        <_.DashboardBase $width={props.width} $height={props.height} $background={props.background}
+        <_.DashboardBase $width={props.width}
+                         $height={props.height}
+                         $background={props.background}
                          $radius={props.radius}>
+            {[...Array(props.row ?? 0).keys()].map((row) => (
+                <div key={`row-${row}`} style={{ display: "flex", justifyContent: "space-between" }}>
+                    {[...Array(props.column ?? 0).keys()].map((col) => (
+                        <DashboardNode key={`node-${row}-${col}`}
+                                       width={width.current-(gap.current * (props.column-1))}
+                                       height={height.current-(gap.current * (props.row-1))}
+                                       radius={props.radius}
+                                       primary={"#007BFF"}>
+
+                        </DashboardNode>
+                    ))}
+                </div>
+            ))}
+
 
         </_.DashboardBase>
     )
