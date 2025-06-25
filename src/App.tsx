@@ -9,9 +9,9 @@ function App() {
                        height={800}
                        column={3}
                        row={3}
-                       // background={"white"}
                        radius={15}
-                       gap={16}/>
+                       gap={16}
+                       primary={"#007BFF"}/>
     </>
   )
 }

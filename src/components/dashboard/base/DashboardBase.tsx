@@ -10,6 +10,7 @@ type Props = {
     background?: string
     radius?: number
     gap?: number
+    primary?: string
 }
 
 const DashboardBase = (props: Props) => {
@@ -30,14 +31,11 @@ const DashboardBase = (props: Props) => {
                                        width={width.current-(gap.current * (props.column-1))}
                                        height={height.current-(gap.current * (props.row-1))}
                                        radius={props.radius}
-                                       primary={"#007BFF"}>
-
+                                       primary={props.primary}>
                         </DashboardNode>
                     ))}
                 </div>
             ))}
-
-
         </_.DashboardBase>
     )
 }
