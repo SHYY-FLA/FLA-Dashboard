@@ -6,6 +6,7 @@ type Props = {
     height: number
     radius?: number
     primary?: string
+    edit?: boolean
 }
 
 const DashboardNode = (props: Props) => {
@@ -13,8 +14,11 @@ const DashboardNode = (props: Props) => {
         <_.DashboardNode $width={props.width}
                          $height={props.height}
                          $radius={props.radius}
-                         $primary={props.primary}>
-            <_.Plus src={Plus}/>
+                         $primary={props.primary}
+                         $edit={props.edit}>
+            {
+                props.edit ? <_.Plus src={Plus}/> : null
+            }
         </_.DashboardNode>
     )
 }

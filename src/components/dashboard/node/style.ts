@@ -5,6 +5,7 @@ type DashboardNodeProps = {
     $height: number;
     $radius?: number;
     $primary?: string
+    $edit?: boolean
 }
 
 export const DashboardNode = styled.section<DashboardNodeProps>`
@@ -12,7 +13,7 @@ export const DashboardNode = styled.section<DashboardNodeProps>`
     height: ${(props) => `${props.$height}px`};
     background-color: white;
     border-radius: ${(props) => `${props.$radius}px`};
-    border: ${(props) => `${props.$primary}`} 6px dashed;
+    border: ${(props) => props.$edit? `${props.$primary} 6px dashed` : null};
     
     position: relative;
 `

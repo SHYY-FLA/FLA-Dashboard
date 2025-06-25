@@ -11,6 +11,8 @@ type Props = {
     radius?: number
     gap?: number
     primary?: string
+    edit?: boolean
+    onContextMenu?: (e: React.MouseEvent) => void
 }
 
 const DashboardBase = (props: Props) => {
@@ -23,7 +25,8 @@ const DashboardBase = (props: Props) => {
         <_.DashboardBase $width={props.width}
                          $height={props.height}
                          $background={props.background}
-                         $radius={props.radius}>
+                         $radius={props.radius}
+                         onContextMenu={props.onContextMenu}>
             {[...Array(props.row ?? 0).keys()].map((row) => (
                 <div key={`row-${row}`} style={{ display: "flex", justifyContent: "space-between" }}>
                     {[...Array(props.column ?? 0).keys()].map((col) => (
