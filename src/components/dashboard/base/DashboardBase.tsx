@@ -26,15 +26,19 @@ const DashboardBase = (props: Props) => {
                          $height={props.height}
                          $background={props.background}
                          $radius={props.radius}
-                         onContextMenu={props.onContextMenu}>
+                         onContextMenu={props.onContextMenu}
+                         className={"_FLA_DASHBOARD_BASE"}>
             {[...Array(props.row ?? 0).keys()].map((row) => (
-                <div key={`row-${row}`} style={{ display: "flex", justifyContent: "space-between" }}>
+                <div key={`row-${row}`}
+                     style={{ display: "flex", justifyContent: "space-between" }}
+                     className={"_FLA_DASHBOARD_BASE"}>
                     {[...Array(props.column ?? 0).keys()].map((col) => (
                         <DashboardNode key={`node-${row}-${col}`}
                                        width={width.current-(gap.current * (props.column-1))}
                                        height={height.current-(gap.current * (props.row-1))}
                                        radius={props.radius}
-                                       primary={props.primary}>
+                                       primary={props.primary}
+                                       edit={props.edit}>
                         </DashboardNode>
                     ))}
                 </div>

@@ -15,7 +15,8 @@ const DashboardNode = (props: Props) => {
                          $height={props.height}
                          $radius={props.radius}
                          $primary={props.primary}
-                         $edit={props.edit}>
+                         $edit={props.edit}
+                         className={"_FLA_DASHBOARD_BASE"}>
             {
                 props.edit ? <_.Plus src={Plus}/> : null
             }
