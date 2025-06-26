@@ -51,6 +51,7 @@ const App = () => {
                            onContextMenu={handleContextMenu}/>
             {viewOptions? <DetailOption x={detailOptionsPos.current.x}
                                         y={detailOptionsPos.current.y}
+                                        editModeStatus={editMode}
                                         editModeHandler={editModeHandler}/> : null}
         </>
     )
