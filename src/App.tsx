@@ -33,8 +33,6 @@ const App = () => {
         window.addEventListener('click', () => {
             setViewOptions(false);
         })
-
-        console.log(typeof setEditMode);
     }, []);
 
 
@@ -47,6 +45,7 @@ const App = () => {
                            radius={15}
                            gap={16}
                            primary={"#007BFF"}
+                           background={"white"}
                            edit={editMode}
                            onContextMenu={handleContextMenu}/>
             {viewOptions? <DetailOption x={detailOptionsPos.current.x}

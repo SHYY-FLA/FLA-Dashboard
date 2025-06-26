@@ -11,7 +11,6 @@ type DashboardNodeProps = {
 export const DashboardNode = styled.section<DashboardNodeProps>`
     width: ${(props) => `${props.$width}px`};
     height: ${(props) => `${props.$height}px`};
-    background-color: white;
     border-radius: ${(props) => `${props.$radius}px`};
     border: ${(props) => props.$edit? `${props.$primary} 6px dashed` : null};
     

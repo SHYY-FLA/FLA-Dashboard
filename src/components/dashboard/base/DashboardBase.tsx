@@ -21,6 +21,8 @@ const DashboardBase = (props: Props) => {
     const height = useRef(props.height/props.row)
     const gap = useRef(props.gap == null ? 8 : props.gap)
 
+
+
     return (
         <_.DashboardBase $width={props.width}
                          $height={props.height}
@@ -28,6 +30,7 @@ const DashboardBase = (props: Props) => {
                          $radius={props.radius}
                          onContextMenu={props.onContextMenu}
                          className={"_FLA_DASHBOARD_BASE"}>
+
             {[...Array(props.row ?? 0).keys()].map((row) => (
                 <div key={`row-${row}`}
                      style={{ display: "flex", justifyContent: "space-between" }}
@@ -43,6 +46,8 @@ const DashboardBase = (props: Props) => {
                     ))}
                 </div>
             ))}
+
+
         </_.DashboardBase>
     )
 }
