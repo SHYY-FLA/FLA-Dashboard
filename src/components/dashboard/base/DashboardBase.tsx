@@ -1,5 +1,5 @@
 import * as _ from './style.ts'
-import {useRef} from "react";
+import {useEffect, useRef} from "react";
 import DashboardNode from "../node/DashboardNode.tsx";
 
 type Props = {
@@ -15,13 +15,37 @@ type Props = {
     onContextMenu?: (e: React.MouseEvent) => void
 }
 
+type Element = {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
 const DashboardBase = (props: Props) => {
     // const sectionCount = useRef((props.column !=0 ? props.column : 1) * (props.row !=0 ? props.row : 1))
     const width = useRef(props.width/props.column)
     const height = useRef(props.height/props.row)
     const gap = useRef(props.gap == null ? 8 : props.gap)
 
+    const elements = useRef<Element[]>([])
 
+    useEffect(() => {
+        elements.current = [
+            {
+                x: 1,
+                y: 1,
+                width: 1,
+                height: 1,
+            },
+            {
+                x: 2,
+                y: 1,
+                width: 1,
+                height: 1,
+            }
+        ]
+    }, []);
 
     return (
         <_.DashboardBase $width={props.width}
