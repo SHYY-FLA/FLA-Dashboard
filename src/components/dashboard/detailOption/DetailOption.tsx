@@ -9,8 +9,8 @@ type Props = {
 
 const DetailOption = (props: Props) => {
     return (
-        <_.OptionsContainer x={props.x} y={props.y}>
-            <_.Option><_.OptionTitle onClick={props.editModeHandler}>{props.editModeStatus?'수정 완료':'수정하기'}</_.OptionTitle></_.Option>
+        <_.OptionsContainer x={props.x} y={props.y} onClick={props.editModeHandler}>
+            <_.Option><_.OptionTitle>{props.editModeStatus?'수정 완료':'수정 하기'}</_.OptionTitle></_.Option>
         </_.OptionsContainer>
     )
 }
