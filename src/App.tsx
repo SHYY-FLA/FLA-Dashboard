@@ -41,7 +41,7 @@ const App = () => {
             <DashboardBase width={800}
                            height={800}
                            column={3}
-                           row={3}
+                           row={6}
                            radius={15}
                            gap={16}
                            primary={"#007BFF"}
