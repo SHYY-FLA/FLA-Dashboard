@@ -1,7 +1,8 @@
 import * as _ from './style.ts'
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type Props = {
+    id: number
     width: number
     height: number
     top: number
@@ -13,11 +14,20 @@ type Props = {
     gap: number
     column: number
     onHighlight?: (locations: number[]) => void
+    onResizeEnd?: (id: number, cellsX: number, cellsY: number) => { width: number; height: number } | void
 }
 
 const Element = (props: Props) => {
     const [width, setWidth] = useState(props.width);
     const [height, setHeight] = useState(props.height);
+
+    useEffect(() => {
+        setWidth(props.width);
+    }, [props.width]);
+
+    useEffect(() => {
+        setHeight(props.height);
+    }, [props.height]);
 
     const startX = useRef(0);
     const startY = useRef(0);
@@ -77,8 +87,17 @@ const Element = (props: Props) => {
         const cellH = props.nodeHeight + props.gap;
         const cellsY = Math.max(1, Math.round((currentHeight.current + props.gap) / cellH));
 
-        setWidth(cellsX * props.nodeWidth + props.gap * (cellsX - 1));
-        setHeight(cellsY * props.nodeHeight + props.gap * (cellsY - 1));
+        let finalX = cellsX;
+        let finalY = cellsY;
+        if (props.onResizeEnd) {
+            const res = props.onResizeEnd(props.id, cellsX, cellsY);
+            if (res) {
+                finalX = res.width;
+                finalY = res.height;
+            }
+        }
+        setWidth(finalX * props.nodeWidth + props.gap * (finalX - 1));
+        setHeight(finalY * props.nodeHeight + props.gap * (finalY - 1));
         props.onHighlight?.([]);
     };
 
@@ -98,3 +117,4 @@ const Element = (props: Props) => {
 };
 
 export default Element;
+
