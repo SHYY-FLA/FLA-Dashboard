@@ -104,6 +104,9 @@ const DashboardBase = (props: Props) => {
                                  height={nodeSize.height * index.height + (gap * (index.height - 1))}
                                  radius={props.radius}
                                  edit={props.edit}
+                                 nodeWidth={nodeSize.width}
+                                 nodeHeight={nodeSize.height}
+                                 gap={gap}
                                  key={index.location}/>
                     )
             })}

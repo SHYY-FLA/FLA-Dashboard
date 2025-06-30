@@ -8,6 +8,9 @@ type Props = {
     left: number
     radius: number
     edit: boolean
+    nodeWidth: number
+    nodeHeight: number
+    gap: number
 }
 
 const Element = (props: Props) => {
@@ -33,8 +36,14 @@ const Element = (props: Props) => {
     const handleMouseMove = (e: MouseEvent) => {
         const deltaX = e.clientX - startX.current;
         const deltaY = e.clientY - startY.current;
-        setWidth(Math.max(10, startWidth.current + deltaX));
-        setHeight(Math.max(10, startHeight.current + deltaY));
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellsX = Math.max(1, Math.round((startWidth.current + deltaX + props.gap) / cellW));
+        const cellH = props.nodeHeight + props.gap;
+        const cellsY = Math.max(1, Math.round((startHeight.current + deltaY + props.gap) / cellH));
+
+        setWidth(cellsX * props.nodeWidth + props.gap * (cellsX - 1));
+        setHeight(cellsY * props.nodeHeight + props.gap * (cellsY - 1));
     };
 
     const handleMouseUp = () => {
