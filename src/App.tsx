@@ -11,11 +11,12 @@ type DetailOptionsPos = {
 const App = () => {
     const [viewOptions, setViewOptions] = useState(false)
     const [editMode, setEditMode] = useState(false)
-    const detailOptionsPos = useRef<DetailOptionsPos>({ x: 0, y: 0 })
+    // const detailOptionsPos = useRef<DetailOptionsPos>({ x: 0, y: 0 })
+    const [detailOptionsPos, setDetailOptionsPos] = useState<DetailOptionsPos>({ x: 0, y: 0 })
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        detailOptionsPos.current = { x: e.clientX, y: e.clientY };
+        setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         setViewOptions(true);
     };
 
@@ -25,7 +26,7 @@ const App = () => {
 
     useEffect(() => {
         window.addEventListener('contextmenu', (e) => {
-            if (((e.target as HTMLElement).className).includes("_FLA_DASHBOARD_BASE"))
+            if (((e.target as HTMLElement).className).includes("_FLA_DASHBOARD"))
                 return;
             setViewOptions(false);
         })
@@ -48,8 +49,8 @@ const App = () => {
                            background={"white"}
                            edit={editMode}
                            onContextMenu={handleContextMenu}/>
-            {viewOptions? <DetailOption x={detailOptionsPos.current.x}
-                                        y={detailOptionsPos.current.y}
+            {viewOptions? <DetailOption x={detailOptionsPos.x}
+                                        y={detailOptionsPos.y}
                                         editModeStatus={editMode}
                                         editModeHandler={editModeHandler}/> : null}
         </>
