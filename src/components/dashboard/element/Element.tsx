@@ -1,7 +1,8 @@
 import * as _ from './style.ts'
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type Props = {
+    id: number
     width: number
     height: number
     top: number
@@ -11,16 +12,29 @@ type Props = {
     nodeWidth: number
     nodeHeight: number
     gap: number
+    column: number
+    onHighlight?: (locations: number[]) => void
+    onResizeEnd?: (id: number, cellsX: number, cellsY: number) => { width: number; height: number } | void
 }
 
 const Element = (props: Props) => {
     const [width, setWidth] = useState(props.width);
     const [height, setHeight] = useState(props.height);
 
+    useEffect(() => {
+        setWidth(props.width);
+    }, [props.width]);
+
+    useEffect(() => {
+        setHeight(props.height);
+    }, [props.height]);
+
     const startX = useRef(0);
     const startY = useRef(0);
     const startWidth = useRef(0);
     const startHeight = useRef(0);
+    const currentWidth = useRef(0);
+    const currentHeight = useRef(0);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -28,6 +42,8 @@ const Element = (props: Props) => {
         startY.current = e.clientY;
         startWidth.current = width;
         startHeight.current = height;
+        currentWidth.current = width;
+        currentHeight.current = height;
 
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
@@ -37,18 +53,52 @@ const Element = (props: Props) => {
         const deltaX = e.clientX - startX.current;
         const deltaY = e.clientY - startY.current;
 
-        const cellW = props.nodeWidth + props.gap;
-        const cellsX = Math.max(1, Math.round((startWidth.current + deltaX + props.gap) / cellW));
-        const cellH = props.nodeHeight + props.gap;
-        const cellsY = Math.max(1, Math.round((startHeight.current + deltaY + props.gap) / cellH));
+        const newWidth = startWidth.current + deltaX;
+        const newHeight = startHeight.current + deltaY;
 
-        setWidth(cellsX * props.nodeWidth + props.gap * (cellsX - 1));
-        setHeight(cellsY * props.nodeHeight + props.gap * (cellsY - 1));
+        currentWidth.current = newWidth;
+        currentHeight.current = newHeight;
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellsX = Math.max(1, Math.round((newWidth + props.gap) / cellW));
+        const cellH = props.nodeHeight + props.gap;
+        const cellsY = Math.max(1, Math.round((newHeight + props.gap) / cellH));
+
+        const startRow = Math.round(props.top / cellH);
+        const startCol = Math.round(props.left / cellW);
+        const highlights: number[] = [];
+        for (let r = startRow; r < startRow + cellsY; r++) {
+            for (let c = startCol; c < startCol + cellsX; c++) {
+                highlights.push(r * props.column + c);
+            }
+        }
+        props.onHighlight?.(highlights);
+
+        setWidth(newWidth);
+        setHeight(newHeight);
     };
 
     const handleMouseUp = () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellsX = Math.max(1, Math.round((currentWidth.current + props.gap) / cellW));
+        const cellH = props.nodeHeight + props.gap;
+        const cellsY = Math.max(1, Math.round((currentHeight.current + props.gap) / cellH));
+
+        let finalX = cellsX;
+        let finalY = cellsY;
+        if (props.onResizeEnd) {
+            const res = props.onResizeEnd(props.id, cellsX, cellsY);
+            if (res) {
+                finalX = res.width;
+                finalY = res.height;
+            }
+        }
+        setWidth(finalX * props.nodeWidth + props.gap * (finalX - 1));
+        setHeight(finalY * props.nodeHeight + props.gap * (finalY - 1));
+        props.onHighlight?.([]);
     };
 
     return (
@@ -67,3 +117,4 @@ const Element = (props: Props) => {
 };
 
 export default Element;
+

@@ -6,6 +6,7 @@ type DashboardNodeProps = {
     $radius?: number;
     $primary?: string
     $edit?: boolean
+    $highlight?: boolean
 }
 
 export const DashboardNode = styled.section<DashboardNodeProps>`
@@ -15,7 +16,8 @@ export const DashboardNode = styled.section<DashboardNodeProps>`
     /* 나머지 스타일은 그대로 유지합니다. */
     border-radius: ${(props) => props.$radius ? `${props.$radius}px` : '8px'};
     border: ${(props) => props.$edit ? `${props.$primary ?? 'blue'} 6px dashed` : 'none'};
-    //background-color: #fff; /* 노드가 보이도록 기본 배경색 추가 (예시) */
+    background-color: ${(props) => props.$highlight ? 'rgba(0, 123, 255, 0.3)' : 'transparent'};
+    transition: background-color 0.2s ease;
 
     position: relative;
     box-sizing: border-box; /* border가 크기에 영향을 주지 않도록 설정 */
