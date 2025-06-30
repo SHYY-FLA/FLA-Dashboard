@@ -7,6 +7,7 @@ type Props = {
     radius?: number
     primary?: string
     edit?: boolean
+    highlight?: boolean
 }
 
 const DashboardNode = (props: Props) => {
@@ -16,6 +17,7 @@ const DashboardNode = (props: Props) => {
                          $radius={props.radius}
                          $primary={props.primary}
                          $edit={props.edit}
+                         $highlight={props.highlight}
                          className={"_FLA_DASHBOARD_BASE"}>
             {
                 props.edit ? <_.Plus src={Plus}/> : null

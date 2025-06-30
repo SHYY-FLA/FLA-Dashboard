@@ -1,5 +1,5 @@
 import * as _ from './style.ts'
-import {useEffect, useMemo, useRef} from "react";
+import {useEffect, useMemo, useState} from "react";
 import DashboardNode from "../node/DashboardNode.tsx";
 import {addMapping, getPosition, NLC} from "../NodeLocationCalculation.ts";
 import Element from "../element/Element.tsx";
@@ -24,17 +24,15 @@ type Element = {
     height: number
 }
 
-type NodeData = {
-    id: number
-    left_top: number
-    right_top: number
-    left_bottom: number
-    right_bottom: number
-    center: number
-}
 
 const DashboardBase = (props: Props) => {
     const { width, height, column, row, gap = 8 } = props;
+
+    const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set());
+
+    const handleHighlight = (locations: number[]) => {
+        setHighlightNodes(new Set(locations));
+    };
 
     // 1. useRef 대신 useMemo를 사용하여 props 변경 시에도 크기가 재계산되도록 합니다.
     const nodeSize = useMemo(() => {
@@ -84,6 +82,7 @@ const DashboardBase = (props: Props) => {
                                     radius={props.radius}
                                     primary={props.primary}
                                     edit={props.edit}
+                                    highlight={highlightNodes.has((colIndex) + (rowIndex * column))}
                                 >
                                 </DashboardNode>
                             )
@@ -107,6 +106,8 @@ const DashboardBase = (props: Props) => {
                                  nodeWidth={nodeSize.width}
                                  nodeHeight={nodeSize.height}
                                  gap={gap}
+                                 column={column}
+                                 onHighlight={handleHighlight}
                                  key={index.location}/>
                     )
             })}

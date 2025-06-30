@@ -1,7 +1,7 @@
 import './App.css'
 import DashboardBase from "./components/dashboard/base/DashboardBase.tsx";
 import DetailOption from "./components/dashboard/detailOption/DetailOption.tsx";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 
 type DetailOptionsPos = {
     x: number

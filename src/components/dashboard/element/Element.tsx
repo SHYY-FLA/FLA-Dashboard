@@ -11,6 +11,8 @@ type Props = {
     nodeWidth: number
     nodeHeight: number
     gap: number
+    column: number
+    onHighlight?: (locations: number[]) => void
 }
 
 const Element = (props: Props) => {
@@ -21,6 +23,8 @@ const Element = (props: Props) => {
     const startY = useRef(0);
     const startWidth = useRef(0);
     const startHeight = useRef(0);
+    const currentWidth = useRef(0);
+    const currentHeight = useRef(0);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -28,6 +32,8 @@ const Element = (props: Props) => {
         startY.current = e.clientY;
         startWidth.current = width;
         startHeight.current = height;
+        currentWidth.current = width;
+        currentHeight.current = height;
 
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
@@ -37,18 +43,43 @@ const Element = (props: Props) => {
         const deltaX = e.clientX - startX.current;
         const deltaY = e.clientY - startY.current;
 
-        const cellW = props.nodeWidth + props.gap;
-        const cellsX = Math.max(1, Math.round((startWidth.current + deltaX + props.gap) / cellW));
-        const cellH = props.nodeHeight + props.gap;
-        const cellsY = Math.max(1, Math.round((startHeight.current + deltaY + props.gap) / cellH));
+        const newWidth = startWidth.current + deltaX;
+        const newHeight = startHeight.current + deltaY;
 
-        setWidth(cellsX * props.nodeWidth + props.gap * (cellsX - 1));
-        setHeight(cellsY * props.nodeHeight + props.gap * (cellsY - 1));
+        currentWidth.current = newWidth;
+        currentHeight.current = newHeight;
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellsX = Math.max(1, Math.round((newWidth + props.gap) / cellW));
+        const cellH = props.nodeHeight + props.gap;
+        const cellsY = Math.max(1, Math.round((newHeight + props.gap) / cellH));
+
+        const startRow = Math.round(props.top / cellH);
+        const startCol = Math.round(props.left / cellW);
+        const highlights: number[] = [];
+        for (let r = startRow; r < startRow + cellsY; r++) {
+            for (let c = startCol; c < startCol + cellsX; c++) {
+                highlights.push(r * props.column + c);
+            }
+        }
+        props.onHighlight?.(highlights);
+
+        setWidth(newWidth);
+        setHeight(newHeight);
     };
 
     const handleMouseUp = () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellsX = Math.max(1, Math.round((currentWidth.current + props.gap) / cellW));
+        const cellH = props.nodeHeight + props.gap;
+        const cellsY = Math.max(1, Math.round((currentHeight.current + props.gap) / cellH));
+
+        setWidth(cellsX * props.nodeWidth + props.gap * (cellsX - 1));
+        setHeight(cellsY * props.nodeHeight + props.gap * (cellsY - 1));
+        props.onHighlight?.([]);
     };
 
     return (
