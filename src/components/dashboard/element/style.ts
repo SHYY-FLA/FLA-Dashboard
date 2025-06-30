@@ -16,4 +16,18 @@ export const ElementWrapper = styled.div<ElementWrapperProps>`
     top: ${props => `${props.top}px`};
     left: ${props => `${props.left}px`};
     border-radius: ${props => `${props.radius}px`};
+    overflow: hidden;
+`
+
+export const Handle = styled.div`
+    width: 10px;
+    height: 40px;
+    background-color: gray;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transform: rotate(45deg) translateX(70%) translateY(25%);
+    &:hover {
+        cursor: move;
+    }
 `
