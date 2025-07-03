@@ -1,428 +1,102 @@
 import * as _ from './style.ts'
-import {useMemo, useState} from "react";
-import DashboardNode from "../node/DashboardNode.tsx";
-import {addMapping, getLocation, getPosition, NLC} from "../NodeLocationCalculation.ts";
-import Element from "../element/Element.tsx";
+import { useMemo, useState } from 'react'
+import DashboardNode from '../node/DashboardNode.tsx'
+import { addMapping, getPosition, NLC } from '../NodeLocationCalculation.ts'
+import Element from '../element/Element.tsx'
+import { DashboardBaseProps, ElementData } from './types.ts'
+import { handleResizeEnd, handleMoveEnd } from './handlers/index.ts'
 
-type Props = {
-    width: number
-    height: number
-    column: number
-    row: number
-    gap: number
-    background?: string
-    radius?: number
-    primary?: string
-    edit?: boolean
-    onContextMenu?: (e: React.MouseEvent) => void
-}
+const DashboardBase = (props: DashboardBaseProps) => {
+    const { width, height, column, row, gap = 8 } = props
 
-type ElementData = {
-    id: number
-    location: number
-    width: number
-    height: number
-}
-
-
-const DashboardBase = (props: Props) => {
-    const { width, height, column, row, gap = 8 } = props;
-
-    const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set());
+    const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set())
 
     const handleHighlight = (locations: number[]) => {
-        setHighlightNodes(new Set(locations));
-    };
+        setHighlightNodes(new Set(locations))
+    }
 
-    const findEmptyArea = (
-        widthCells: number,
-        heightCells: number,
-        occupied: Set<number>,
-    ): { top: number; left: number } | null => {
-        for (let r = 0; r <= row - heightCells; r++) {
-            for (let c = 0; c <= column - widthCells; c++) {
-                let ok = true;
-                for (let rr = 0; rr < heightCells && ok; rr++) {
-                    for (let cc = 0; cc < widthCells; cc++) {
-                        if (occupied.has((r + rr) * column + (c + cc))) {
-                            ok = false;
-                            break;
-                        }
-                    }
-                }
-                if (ok) return { top: r, left: c };
-            }
-        }
-        return null;
-    };
-
-    const areaFree = (
-        topIdx: number,
-        leftIdx: number,
-        widthCells: number,
-        heightCells: number,
-        occupied: Set<number>,
-    ): boolean => {
-        for (let r = topIdx; r < topIdx + heightCells; r++) {
-            for (let c = leftIdx; c < leftIdx + widthCells; c++) {
-                if (occupied.has(r * column + c)) return false;
-            }
-        }
-        return true;
-    };
-
-    const findSpotPriority = (
-        widthCells: number,
-        heightCells: number,
-        start: { top: number; left: number },
-        occupied: Set<number>,
-    ): { top: number; left: number } | null => {
-        for (let c = start.left + 1; c <= column - widthCells; c++) {
-            if (areaFree(start.top, c, widthCells, heightCells, occupied)) {
-                return { top: start.top, left: c };
-            }
-        }
-        for (let c = start.left - 1; c >= 0; c--) {
-            if (areaFree(start.top, c, widthCells, heightCells, occupied)) {
-                return { top: start.top, left: c };
-            }
-        }
-        for (let r = start.top + 1; r <= row - heightCells; r++) {
-            if (areaFree(r, start.left, widthCells, heightCells, occupied)) {
-                return { top: r, left: start.left };
-            }
-        }
-        for (let r = start.top - 1; r >= 0; r--) {
-            if (areaFree(r, start.left, widthCells, heightCells, occupied)) {
-                return { top: r, left: start.left };
-            }
-        }
-        return null;
-    };
-
-    const findNearestSpot = (
-        widthCells: number,
-        heightCells: number,
-        start: { top: number; left: number },
-        occupied: Set<number>,
-    ): { top: number; left: number } | null => {
-        let best: { top: number; left: number } | null = null;
-        let bestDist = Number.MAX_SAFE_INTEGER;
-        for (let r = 0; r <= row - heightCells; r++) {
-            for (let c = 0; c <= column - widthCells; c++) {
-                if (areaFree(r, c, widthCells, heightCells, occupied)) {
-                    const dist = Math.abs(r - start.top) + Math.abs(c - start.left);
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        best = { top: r, left: c };
-                    }
-                }
-            }
-        }
-        return best;
-    };
-
-    const handleResizeEnd = (
-        id: number,
-        cellsX: number,
-        cellsY: number,
-    ): { width: number; height: number } => {
-        setHighlightNodes(new Set());
-        const el = elements.find((e) => e.id === id);
-        if (!el) return { width: cellsX, height: cellsY };
-        const pos = getPosition(el.location);
-        if (!pos) return { width: cellsX, height: cellsY };
-
-        const newW = Math.min(cellsX, column - pos.left);
-        const newH = Math.min(cellsY, row - pos.top);
-
-        const occupied = new Map<number, number>();
-        elements.forEach((e) => {
-            if (e.id === id) return;
-            const p = getPosition(e.location);
-            if (!p) return;
-            for (let r = 0; r < e.height; r++) {
-                for (let c = 0; c < e.width; c++) {
-                    occupied.set((p.top + r) * column + (p.left + c), e.id);
-                }
-            }
-        });
-
-        const colliding = new Set<number>();
-        for (let r = pos.top; r < pos.top + newH; r++) {
-            for (let c = pos.left; c < pos.left + newW; c++) {
-                const oid = occupied.get(r * column + c);
-                if (oid !== undefined) colliding.add(oid);
-            }
-        }
-
-        const finalOccupied = new Set<number>();
-        for (let r = pos.top; r < pos.top + newH; r++) {
-            for (let c = pos.left; c < pos.left + newW; c++) {
-                finalOccupied.add(r * column + c);
-            }
-        }
-        elements.forEach((e) => {
-            if (e.id === id || colliding.has(e.id)) return;
-            const p = getPosition(e.location);
-            if (!p) return;
-            for (let r = 0; r < e.height; r++) {
-                for (let c = 0; c < e.width; c++) {
-                    finalOccupied.add((p.top + r) * column + (p.left + c));
-                }
-            }
-        });
-
-        const updates: Record<number, number> = {};
-        for (const cid of colliding) {
-            const e = elements.find((it) => it.id === cid);
-            if (!e) continue;
-            const spot = findEmptyArea(e.width, e.height, finalOccupied);
-            if (!spot) {
-                return { width: el.width, height: el.height };
-            }
-            const loc = getLocation(spot);
-            if (loc === undefined) {
-                return { width: el.width, height: el.height };
-            }
-            updates[cid] = loc;
-            for (let r = 0; r < e.height; r++) {
-                for (let c = 0; c < e.width; c++) {
-                    finalOccupied.add((spot.top + r) * column + (spot.left + c));
-                }
-            }
-        }
-
-        setElements((prev) =>
-            prev.map((e) => {
-                if (e.id === id) {
-                    return { ...e, width: newW, height: newH };
-                }
-                if (updates[e.id] !== undefined) {
-                    return { ...e, location: updates[e.id] };
-                }
-                return e;
-            }),
-        );
-
-        return { width: newW, height: newH };
-    };
-
-    const handleMoveEnd = (
-        id: number,
-        rowIdx: number,
-        colIdx: number,
-    ): { top: number; left: number } => {
-        setHighlightNodes(new Set());
-        const el = elements.find((e) => e.id === id);
-        if (!el) return { top: rowIdx, left: colIdx };
-        const newRow = Math.min(Math.max(0, rowIdx), row - el.height);
-        const newCol = Math.min(Math.max(0, colIdx), column - el.width);
-
-        const occupiedAll = new Map<number, number>();
-        elements.forEach((e) => {
-            if (e.id === id) return;
-            const p = getPosition(e.location);
-            if (!p) return;
-            for (let r = 0; r < e.height; r++) {
-                for (let c = 0; c < e.width; c++) {
-                    occupiedAll.set((p.top + r) * column + (p.left + c), e.id);
-                }
-            }
-        });
-
-        const colliding = new Set<number>();
-        for (let r = newRow; r < newRow + el.height; r++) {
-            for (let c = newCol; c < newCol + el.width; c++) {
-                const oid = occupiedAll.get(r * column + c);
-                if (oid !== undefined) colliding.add(oid);
-            }
-        }
-
-        if (colliding.size === 0) {
-            const loc = getLocation({ top: newRow, left: newCol });
-            if (loc !== undefined) {
-                setElements((prev) =>
-                    prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
-                );
-            }
-            return { top: newRow, left: newCol };
-        }
-
-        const finalOccupied = new Set<number>();
-        for (let r = newRow; r < newRow + el.height; r++) {
-            for (let c = newCol; c < newCol + el.width; c++) {
-                finalOccupied.add(r * column + c);
-            }
-        }
-        elements.forEach((e) => {
-            if (e.id === id || colliding.has(e.id)) return;
-            const p = getPosition(e.location);
-            if (!p) return;
-            for (let r = 0; r < e.height; r++) {
-                for (let c = 0; c < e.width; c++) {
-                    finalOccupied.add((p.top + r) * column + (p.left + c));
-                }
-            }
-        });
-
-        const updates: Record<number, number> = {};
-        let cannotResolve = false;
-        for (const cid of colliding) {
-            const e = elements.find((it) => it.id === cid);
-            if (!e) continue;
-            const pos = getPosition(e.location);
-            if (!pos) continue;
-            const spot = findSpotPriority(e.width, e.height, pos, finalOccupied);
-            if (!spot) {
-                cannotResolve = true;
-                break;
-            }
-            const loc2 = getLocation(spot);
-            if (loc2 === undefined) {
-                cannotResolve = true;
-                break;
-            }
-            updates[cid] = loc2;
-            for (let r = 0; r < e.height; r++) {
-                for (let c = 0; c < e.width; c++) {
-                    finalOccupied.add((spot.top + r) * column + (spot.left + c));
-                }
-            }
-        }
-
-        if (cannotResolve) {
-            const nearest = findNearestSpot(
-                el.width,
-                el.height,
-                { top: newRow, left: newCol },
-                new Set(occupiedAll.keys())
-            );
-            if (!nearest) {
-                const cur = getPosition(el.location);
-                return cur ? cur : { top: rowIdx, left: colIdx };
-            }
-            const loc = getLocation(nearest);
-            if (loc !== undefined) {
-                setElements((prev) =>
-                    prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
-                );
-            }
-            return { top: nearest.top, left: nearest.left };
-        }
-
-        const loc = getLocation({ top: newRow, left: newCol });
-        if (loc !== undefined) {
-            setElements((prev) =>
-                prev.map((e) => {
-                    if (e.id === id) return { ...e, location: loc };
-                    if (updates[e.id] !== undefined) {
-                        return { ...e, location: updates[e.id] };
-                    }
-                    return e;
-                }),
-            );
-        }
-
-        return { top: newRow, left: newCol };
-    };
-
-    // 1. useRef 대신 useMemo를 사용하여 props 변경 시에도 크기가 재계산되도록 합니다.
-    const nodeSize = useMemo(() => {
-        return NLC(props)
-    }, [props]);
-
-    const [nextId, setNextId] = useState<number>(2);
-
-    const handleAddElement = (location: number) => {
-        setElements(prev => [
-            ...prev,
-            { id: nextId, location, width: 1, height: 1 },
-        ]);
-        setNextId(prev => prev + 1);
-    };
+    const [nextId, setNextId] = useState<number>(2)
 
     const [elements, setElements] = useState<ElementData[]>([
-        {
-            id: 0,
-            location: 0,
-            width: 2,
-            height: 1,
-        },
-        {
-            id: 1,
-            location: 3,
-            width: 1,
-            height: 2,
-        },
-    ]);
+        { id: 0, location: 0, width: 2, height: 1 },
+        { id: 1, location: 3, width: 1, height: 2 },
+    ])
 
+    const nodeSize = useMemo(() => NLC(props), [props])
 
+    const handleAddElement = (location: number) => {
+        setElements(prev => [...prev, { id: nextId, location, width: 1, height: 1 }])
+        setNextId(prev => prev + 1)
+    }
+
+    const onResizeEnd = (id: number, cellsX: number, cellsY: number) =>
+        handleResizeEnd(id, cellsX, cellsY, column, row, elements, setElements, setHighlightNodes)
+
+    const onMoveEnd = (id: number, rowIdx: number, colIdx: number) =>
+        handleMoveEnd(id, rowIdx, colIdx, column, row, elements, setElements, setHighlightNodes)
 
     return (
-        // style.ts 에서는 flex 컨테이너 역할만 하도록 설정
         <_.DashboardBase
             $width={width}
             $height={height}
             $background={props.background}
             $radius={props.radius}
             onContextMenu={props.onContextMenu}
-            className={"_FLA_DASHBOARD_BASE"}
+            className={'_FLA_DASHBOARD_BASE'}
             style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}
         >
             {[...Array(row).keys()].map((rowIndex) => (
-                <div key={`row-${rowIndex}`}
-                     style={{ display: "flex", gap: `${gap}px` }}
-                     className={"_FLA_DASHBOARD_BASE_ROW"}>
-                    {[...Array(column).keys()].map(
-                        (colIndex) => {
-                            addMapping((colIndex) + (rowIndex * column), { top: rowIndex, left: colIndex })
-                            const location = (colIndex) + (rowIndex * column)
-                            return (
-                                <DashboardNode
-                                    key={`node-${rowIndex}-${colIndex}`}
-                                    width={nodeSize.width}
-                                    height={nodeSize.height}
-                                    location={location}
-                                    radius={props.radius}
-                                    primary={props.primary}
-                                    edit={props.edit}
-                                    highlight={highlightNodes.has(location)}
-                                    onAddElement={handleAddElement}
-                                >
-                                </DashboardNode>
-                            )
-                        }
-
-                    )}
+                <div
+                    key={`row-${rowIndex}`}
+                    style={{ display: 'flex', gap: `${gap}px` }}
+                    className={'_FLA_DASHBOARD_BASE_ROW'}
+                >
+                    {[...Array(column).keys()].map((colIndex) => {
+                        addMapping(colIndex + rowIndex * column, { top: rowIndex, left: colIndex })
+                        const location = colIndex + rowIndex * column
+                        return (
+                            <DashboardNode
+                                key={`node-${rowIndex}-${colIndex}`}
+                                width={nodeSize.width}
+                                height={nodeSize.height}
+                                location={location}
+                                radius={props.radius}
+                                primary={props.primary}
+                                edit={props.edit}
+                                highlight={highlightNodes.has(location)}
+                                onAddElement={handleAddElement}
+                            />
+                        )
+                    })}
                 </div>
             ))}
 
             {elements.map((el) => {
-                const loc: { top: number; left: number } | undefined
-                            = getPosition(el.location)
-                if (loc != undefined)
+                const loc = getPosition(el.location)
+                if (loc !== undefined)
                     return (
-                        <Element id={el.id}
-                                 top={loc.top * (nodeSize.height + gap)}
-                                 left={loc.left * (nodeSize.width + gap)}
-                                 width={nodeSize.width * el.width + (gap * (el.width - 1))}
-                                 height={nodeSize.height * el.height + (gap * (el.height - 1))}
-                                 radius={props.radius}
-                                 edit={props.edit}
-                                nodeWidth={nodeSize.width}
-                                nodeHeight={nodeSize.height}
-                                gap={gap}
-                                column={column}
-                                row={row}
-                                onHighlight={handleHighlight}
-                                onResizeEnd={handleResizeEnd}
-                                onMoveEnd={handleMoveEnd}
-                                key={el.id}/>
-                )
+                        <Element
+                            id={el.id}
+                            top={loc.top * (nodeSize.height + gap)}
+                            left={loc.left * (nodeSize.width + gap)}
+                            width={nodeSize.width * el.width + gap * (el.width - 1)}
+                            height={nodeSize.height * el.height + gap * (el.height - 1)}
+                            radius={props.radius}
+                            edit={props.edit}
+                            nodeWidth={nodeSize.width}
+                            nodeHeight={nodeSize.height}
+                            gap={gap}
+                            column={column}
+                            row={row}
+                            onHighlight={handleHighlight}
+                            onResizeEnd={onResizeEnd}
+                            onMoveEnd={onMoveEnd}
+                            key={el.id}
+                        />
+                    )
             })}
         </_.DashboardBase>
-    );
-};
+    )
+}
 
-export default DashboardBase;
+export default DashboardBase
