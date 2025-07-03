@@ -19,7 +19,7 @@ export const ElementWrapper = styled.div<ElementWrapperProps>`
     overflow: hidden;
 `
 
-export const Handle = styled.div`
+export const SiezeHandle = styled.div`
     width: 10px;
     height: 40px;
     background-color: gray;

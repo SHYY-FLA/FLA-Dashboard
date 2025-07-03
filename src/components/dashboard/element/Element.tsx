@@ -151,14 +151,19 @@ const Element = (props: Props) => {
         props.onHighlight?.([]);
     };
 
-    const handleMoveUp = () => {
+    const handleMoveUp = (e: MouseEvent) => {
         window.removeEventListener('mousemove', handleMoveMove);
         window.removeEventListener('mouseup', handleMoveUp);
 
+        const deltaX = e.clientX - moveStartX.current;
+        const deltaY = e.clientY - moveStartY.current;
+        const finalTop = startTop.current + deltaY;
+        const finalLeft = startLeft.current + deltaX;
+
         const cellW = props.nodeWidth + props.gap;
         const cellH = props.nodeHeight + props.gap;
-        const row = Math.round(top / cellH);
-        const col = Math.round(left / cellW);
+        const row = Math.round(finalTop / cellH);
+        const col = Math.round(finalLeft / cellW);
 
         let finalRow = row;
         let finalCol = col;
@@ -186,7 +191,7 @@ const Element = (props: Props) => {
             {props.edit ? (
                 <>
                     <_.MoveHandle onMouseDown={handleMoveDown} />
-                    <_.Handle onMouseDown={handleMouseDown} />
+                    <_.SiezeHandle onMouseDown={handleMouseDown} />
                 </>
             ) : null}
         </_.ElementWrapper>
