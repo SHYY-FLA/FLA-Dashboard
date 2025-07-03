@@ -231,10 +231,11 @@ const DashboardBase = (props: Props) => {
                                  height={nodeSize.height * el.height + (gap * (el.height - 1))}
                                  radius={props.radius}
                                  edit={props.edit}
-                                 nodeWidth={nodeSize.width}
-                                 nodeHeight={nodeSize.height}
-                                 gap={gap}
-                                 column={column}
+                                nodeWidth={nodeSize.width}
+                                nodeHeight={nodeSize.height}
+                                gap={gap}
+                                column={column}
+                                row={row}
                                 onHighlight={handleHighlight}
                                 onResizeEnd={handleResizeEnd}
                                 onMoveEnd={handleMoveEnd}

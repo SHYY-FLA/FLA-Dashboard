@@ -13,6 +13,7 @@ type Props = {
     nodeHeight: number
     gap: number
     column: number
+    row: number
     onHighlight?: (locations: number[]) => void
     onResizeEnd?: (id: number, cellsX: number, cellsY: number) => { width: number; height: number } | void
     onMoveEnd?: (id: number, row: number, col: number) => { top: number; left: number } | void
@@ -93,7 +94,9 @@ const Element = (props: Props) => {
         const startCol = Math.round(props.left / cellW);
         const highlights: number[] = [];
         for (let r = startRow; r < startRow + cellsY; r++) {
+            if (r < 0 || r >= props.row) continue;
             for (let c = startCol; c < startCol + cellsX; c++) {
+                if (c < 0 || c >= props.column) continue;
                 highlights.push(r * props.column + c);
             }
         }
@@ -118,7 +121,9 @@ const Element = (props: Props) => {
         const col = Math.round(newLeft / cellW);
         const highlights: number[] = [];
         for (let r = row; r < row + cellsY; r++) {
+            if (r < 0 || r >= props.row) continue;
             for (let c = col; c < col + cellsX; c++) {
+                if (c < 0 || c >= props.column) continue;
                 highlights.push(r * props.column + c);
             }
         }
