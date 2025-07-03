@@ -100,6 +100,28 @@ const DashboardBase = (props: Props) => {
         return null;
     };
 
+    const findNearestSpot = (
+        widthCells: number,
+        heightCells: number,
+        start: { top: number; left: number },
+        occupied: Set<number>,
+    ): { top: number; left: number } | null => {
+        let best: { top: number; left: number } | null = null;
+        let bestDist = Number.MAX_SAFE_INTEGER;
+        for (let r = 0; r <= row - heightCells; r++) {
+            for (let c = 0; c <= column - widthCells; c++) {
+                if (areaFree(r, c, widthCells, heightCells, occupied)) {
+                    const dist = Math.abs(r - start.top) + Math.abs(c - start.left);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = { top: r, left: c };
+                    }
+                }
+            }
+        }
+        return best;
+    };
+
     const handleResizeEnd = (
         id: number,
         cellsX: number,
@@ -197,14 +219,14 @@ const DashboardBase = (props: Props) => {
         const newRow = Math.min(Math.max(0, rowIdx), row - el.height);
         const newCol = Math.min(Math.max(0, colIdx), column - el.width);
 
-        const occupied = new Map<number, number>();
+        const occupiedAll = new Map<number, number>();
         elements.forEach((e) => {
             if (e.id === id) return;
             const p = getPosition(e.location);
             if (!p) return;
             for (let r = 0; r < e.height; r++) {
                 for (let c = 0; c < e.width; c++) {
-                    occupied.set((p.top + r) * column + (p.left + c), e.id);
+                    occupiedAll.set((p.top + r) * column + (p.left + c), e.id);
                 }
             }
         });
@@ -212,9 +234,19 @@ const DashboardBase = (props: Props) => {
         const colliding = new Set<number>();
         for (let r = newRow; r < newRow + el.height; r++) {
             for (let c = newCol; c < newCol + el.width; c++) {
-                const oid = occupied.get(r * column + c);
+                const oid = occupiedAll.get(r * column + c);
                 if (oid !== undefined) colliding.add(oid);
             }
+        }
+
+        if (colliding.size === 0) {
+            const loc = getLocation({ top: newRow, left: newCol });
+            if (loc !== undefined) {
+                setElements((prev) =>
+                    prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
+                );
+            }
+            return { top: newRow, left: newCol };
         }
 
         const finalOccupied = new Set<number>();
@@ -235,6 +267,7 @@ const DashboardBase = (props: Props) => {
         });
 
         const updates: Record<number, number> = {};
+        let cannotResolve = false;
         for (const cid of colliding) {
             const e = elements.find((it) => it.id === cid);
             if (!e) continue;
@@ -242,13 +275,13 @@ const DashboardBase = (props: Props) => {
             if (!pos) continue;
             const spot = findSpotPriority(e.width, e.height, pos, finalOccupied);
             if (!spot) {
-                const cur = getPosition(el.location);
-                return cur ? cur : { top: rowIdx, left: colIdx };
+                cannotResolve = true;
+                break;
             }
             const loc2 = getLocation(spot);
             if (loc2 === undefined) {
-                const cur = getPosition(el.location);
-                return cur ? cur : { top: rowIdx, left: colIdx };
+                cannotResolve = true;
+                break;
             }
             updates[cid] = loc2;
             for (let r = 0; r < e.height; r++) {
@@ -256,6 +289,26 @@ const DashboardBase = (props: Props) => {
                     finalOccupied.add((spot.top + r) * column + (spot.left + c));
                 }
             }
+        }
+
+        if (cannotResolve) {
+            const nearest = findNearestSpot(
+                el.width,
+                el.height,
+                { top: newRow, left: newCol },
+                new Set(occupiedAll.keys())
+            );
+            if (!nearest) {
+                const cur = getPosition(el.location);
+                return cur ? cur : { top: rowIdx, left: colIdx };
+            }
+            const loc = getLocation(nearest);
+            if (loc !== undefined) {
+                setElements((prev) =>
+                    prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
+                );
+            }
+            return { top: nearest.top, left: nearest.left };
         }
 
         const loc = getLocation({ top: newRow, left: newCol });
