@@ -332,6 +332,16 @@ const DashboardBase = (props: Props) => {
         return NLC(props)
     }, [props]);
 
+    const [nextId, setNextId] = useState<number>(2);
+
+    const handleAddElement = (location: number) => {
+        setElements(prev => [
+            ...prev,
+            { id: nextId, location, width: 1, height: 1 },
+        ]);
+        setNextId(prev => prev + 1);
+    };
+
     const [elements, setElements] = useState<ElementData[]>([
         {
             id: 0,
@@ -367,15 +377,18 @@ const DashboardBase = (props: Props) => {
                     {[...Array(column).keys()].map(
                         (colIndex) => {
                             addMapping((colIndex) + (rowIndex * column), { top: rowIndex, left: colIndex })
+                            const location = (colIndex) + (rowIndex * column)
                             return (
                                 <DashboardNode
                                     key={`node-${rowIndex}-${colIndex}`}
                                     width={nodeSize.width}
                                     height={nodeSize.height}
+                                    location={location}
                                     radius={props.radius}
                                     primary={props.primary}
                                     edit={props.edit}
-                                    highlight={highlightNodes.has((colIndex) + (rowIndex * column))}
+                                    highlight={highlightNodes.has(location)}
+                                    onAddElement={handleAddElement}
                                 >
                                 </DashboardNode>
                             )
