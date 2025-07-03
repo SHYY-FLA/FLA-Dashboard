@@ -1,12 +1,12 @@
 import * as _ from './style.ts'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import DashboardNode from '../node/DashboardNode.tsx'
 import { addMapping, getPosition, NLC } from '../NodeLocationCalculation.ts'
 import Element from '../element/Element.tsx'
-import type { DashboardBaseProps, ElementData } from './types.ts'
+import type { DashboardBaseProps, ElementData, DashboardBaseHandle } from './types.ts'
 import { handleResizeEnd, handleMoveEnd } from './handlers/index.ts'
 
-const DashboardBase = (props: DashboardBaseProps) => {
+const DashboardBase = forwardRef<DashboardBaseHandle, DashboardBaseProps>((props, ref) => {
     const { width, height, column, row, gap = 8 } = props
 
     const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set())
@@ -35,12 +35,35 @@ const DashboardBase = (props: DashboardBaseProps) => {
     const onMoveEnd = (id: number, rowIdx: number, colIdx: number) =>
         handleMoveEnd(id, rowIdx, colIdx, column, row, elements, setElements, setHighlightNodes)
 
+    useImperativeHandle(ref, () => ({
+        deleteElement: (id: number) => {
+            setElements(prev => prev.filter(el => el.id !== id))
+        },
+        getElementIdAtLocation: (location: number) => {
+            const pos = getPosition(location)
+            if (!pos) return null
+            for (const el of elements) {
+                const elPos = getPosition(el.location)
+                if (!elPos) continue
+                if (
+                    pos.top >= elPos.top &&
+                    pos.top < elPos.top + el.height &&
+                    pos.left >= elPos.left &&
+                    pos.left < elPos.left + el.width
+                ) {
+                    return el.id
+                }
+            }
+            return null
+        },
+    }), [elements])
+
     return (
         <_.DashboardBase
             $width={width}
             $height={height}
             $background={props.background}
-            $radius={props.radius}
+            $radius={props.radius ?? 0}
             onContextMenu={props.onContextMenu}
             className={'_FLA_DASHBOARD_BASE'}
             style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}
@@ -60,11 +83,12 @@ const DashboardBase = (props: DashboardBaseProps) => {
                                 width={nodeSize.width}
                                 height={nodeSize.height}
                                 location={location}
-                                radius={props.radius}
+                                radius={props.radius ?? 0}
                                 primary={props.primary}
-                                edit={props.edit}
+                                edit={props.edit ?? false}
                                 highlight={highlightNodes.has(location)}
                                 onAddElement={handleAddElement}
+                                onContextMenu={props.onNodeContextMenu}
                             />
                         )
                     })}
@@ -81,8 +105,8 @@ const DashboardBase = (props: DashboardBaseProps) => {
                             left={loc.left * (nodeSize.width + gap)}
                             width={nodeSize.width * el.width + gap * (el.width - 1)}
                             height={nodeSize.height * el.height + gap * (el.height - 1)}
-                            radius={props.radius}
-                            edit={props.edit}
+                            radius={props.radius ?? 0}
+                            edit={props.edit ?? false}
                             nodeWidth={nodeSize.width}
                             nodeHeight={nodeSize.height}
                             gap={gap}
@@ -91,12 +115,13 @@ const DashboardBase = (props: DashboardBaseProps) => {
                             onHighlight={handleHighlight}
                             onResizeEnd={onResizeEnd}
                             onMoveEnd={onMoveEnd}
+                            onContextMenu={props.onElementContextMenu}
                             key={el.id}
                         />
                     )
             })}
         </_.DashboardBase>
     )
-}
+})
 
 export default DashboardBase

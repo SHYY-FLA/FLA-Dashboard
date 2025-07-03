@@ -9,6 +9,13 @@ export type DashboardBaseProps = {
     primary?: string
     edit?: boolean
     onContextMenu?: (e: React.MouseEvent) => void
+    onElementContextMenu?: (e: React.MouseEvent, id: number) => void
+    onNodeContextMenu?: (e: React.MouseEvent, location: number) => void
+}
+
+export type DashboardBaseHandle = {
+    deleteElement: (id: number) => void
+    getElementIdAtLocation: (location: number) => number | null
 }
 
 export type ElementData = {

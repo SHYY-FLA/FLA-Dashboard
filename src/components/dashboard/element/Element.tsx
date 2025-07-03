@@ -17,6 +17,7 @@ type Props = {
     onHighlight?: (locations: number[]) => void
     onResizeEnd?: (id: number, cellsX: number, cellsY: number) => { width: number; height: number } | void
     onMoveEnd?: (id: number, row: number, col: number) => { top: number; left: number } | void
+    onContextMenu?: (e: React.MouseEvent, id: number) => void
 }
 
 const Element = (props: Props) => {
@@ -192,6 +193,10 @@ const Element = (props: Props) => {
             width={width}
             height={height}
             radius={props.radius}
+            onContextMenu={(e) => {
+                e.preventDefault();
+                props.onContextMenu?.(e, props.id);
+            }}
         >
             {props.edit ? (
                 <>
