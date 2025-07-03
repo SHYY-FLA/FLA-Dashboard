@@ -18,6 +18,7 @@ const App = () => {
 
     const handleBaseContextMenu = (e: React.MouseEvent) => {
         e.preventDefault()
+        e.stopPropagation()
         console.log('Base context menu triggered')
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         setSelectedElementId(null)
@@ -26,6 +27,7 @@ const App = () => {
 
     const handleElementContextMenu = (e: React.MouseEvent, id: number) => {
         e.preventDefault()
+        e.stopPropagation()
         console.log('Element context menu triggered', id)
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         setSelectedElementId(id)
@@ -34,6 +36,7 @@ const App = () => {
 
     const handleNodeContextMenu = (e: React.MouseEvent, location: number) => {
         e.preventDefault()
+        e.stopPropagation()
         console.log('Node context menu triggered', location)
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         const id = dashboardRef.current?.getElementIdAtLocation(location) ?? null
