@@ -39,7 +39,24 @@ const DashboardBase = forwardRef<DashboardBaseHandle, DashboardBaseProps>((props
         deleteElement: (id: number) => {
             setElements(prev => prev.filter(el => el.id !== id))
         },
-    }))
+        getElementIdAtLocation: (location: number) => {
+            const pos = getPosition(location)
+            if (!pos) return null
+            for (const el of elements) {
+                const elPos = getPosition(el.location)
+                if (!elPos) continue
+                if (
+                    pos.top >= elPos.top &&
+                    pos.top < elPos.top + el.height &&
+                    pos.left >= elPos.left &&
+                    pos.left < elPos.left + el.width
+                ) {
+                    return el.id
+                }
+            }
+            return null
+        },
+    }), [elements])
 
     return (
         <_.DashboardBase
@@ -71,6 +88,7 @@ const DashboardBase = forwardRef<DashboardBaseHandle, DashboardBaseProps>((props
                                 edit={props.edit ?? false}
                                 highlight={highlightNodes.has(location)}
                                 onAddElement={handleAddElement}
+                                onContextMenu={props.onNodeContextMenu}
                             />
                         )
                     })}

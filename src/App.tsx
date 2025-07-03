@@ -30,6 +30,14 @@ const App = () => {
         setViewOptions(true)
     }
 
+    const handleNodeContextMenu = (e: React.MouseEvent, location: number) => {
+        e.preventDefault()
+        setDetailOptionsPos({ x: e.clientX, y: e.clientY })
+        const id = dashboardRef.current?.getElementIdAtLocation(location) ?? null
+        setSelectedElementId(id)
+        setViewOptions(true)
+    }
+
     const deleteElementHandler = () => {
         if (selectedElementId !== null) {
             dashboardRef.current?.deleteElement(selectedElementId)
@@ -74,7 +82,8 @@ const App = () => {
                            edit={editMode}
                            ref={dashboardRef}
                            onContextMenu={handleBaseContextMenu}
-                           onElementContextMenu={handleElementContextMenu}/>
+                           onElementContextMenu={handleElementContextMenu}
+                           onNodeContextMenu={handleNodeContextMenu}/>
            {viewOptions? <DetailOption x={detailOptionsPos.x}
                                        y={detailOptionsPos.y}
                                        editModeStatus={editMode}

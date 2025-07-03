@@ -10,6 +10,7 @@ type Props = {
     edit?: boolean
     highlight?: boolean
     onAddElement?: (location: number) => void
+    onContextMenu?: (e: React.MouseEvent, location: number) => void
 }
 
 const DashboardNode = (props: Props) => {
@@ -20,7 +21,11 @@ const DashboardNode = (props: Props) => {
                          $primary={props.primary}
                          $edit={props.edit}
                          $highlight={props.highlight}
-                         className={"_FLA_DASHBOARD_BASE"}>
+                         className={"_FLA_DASHBOARD_BASE"}
+                         onContextMenu={(e) => {
+                             e.preventDefault()
+                             props.onContextMenu?.(e, props.location)
+                         }}>
             {
                 props.edit ? (
                     <_.Plus
