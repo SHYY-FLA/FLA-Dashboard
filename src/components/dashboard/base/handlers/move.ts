@@ -1,4 +1,4 @@
-import { ElementData } from '../types.ts'
+import type { ElementData } from '../types.ts'
 import { getPosition, getLocation } from '../../NodeLocationCalculation.ts'
 import { findSpotPriority, findNearestSpot } from '../layoutUtils.ts'
 

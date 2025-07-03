@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import DashboardNode from '../node/DashboardNode.tsx'
 import { addMapping, getPosition, NLC } from '../NodeLocationCalculation.ts'
 import Element from '../element/Element.tsx'
-import { DashboardBaseProps, ElementData } from './types.ts'
+import type { DashboardBaseProps, ElementData } from './types.ts'
 import { handleResizeEnd, handleMoveEnd } from './handlers/index.ts'
 
 const DashboardBase = (props: DashboardBaseProps) => {
