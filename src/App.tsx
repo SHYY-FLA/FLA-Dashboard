@@ -16,6 +16,13 @@ const App = () => {
     const [selectedElementId, setSelectedElementId] = useState<number | null>(null)
     const dashboardRef = useRef<DashboardBaseHandle>(null)
 
+    const handleBaseContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault()
+        setDetailOptionsPos({ x: e.clientX, y: e.clientY })
+        setSelectedElementId(null)
+        setViewOptions(true)
+    }
+
     const handleElementContextMenu = (e: React.MouseEvent, id: number) => {
         e.preventDefault()
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
@@ -35,16 +42,23 @@ const App = () => {
     }
 
     useEffect(() => {
-        window.addEventListener('contextmenu', (e) => {
-            if (((e.target as HTMLElement).className).includes("_FLA_DASHBOARD"))
-                return;
-            setViewOptions(false);
-        })
+        const contextMenuListener = (e: MouseEvent) => {
+            if ((e.target as HTMLElement).className.includes("_FLA_DASHBOARD"))
+                return
+            setViewOptions(false)
+        }
+        const clickListener = () => {
+            setViewOptions(false)
+        }
 
-        window.addEventListener('click', () => {
-            setViewOptions(false);
-        })
-    }, []);
+        window.addEventListener('contextmenu', contextMenuListener)
+        window.addEventListener('click', clickListener)
+
+        return () => {
+            window.removeEventListener('contextmenu', contextMenuListener)
+            window.removeEventListener('click', clickListener)
+        }
+    }, [])
 
 
     return (
@@ -59,12 +73,13 @@ const App = () => {
                            background={"white"}
                            edit={editMode}
                            ref={dashboardRef}
+                           onContextMenu={handleBaseContextMenu}
                            onElementContextMenu={handleElementContextMenu}/>
            {viewOptions? <DetailOption x={detailOptionsPos.x}
                                        y={detailOptionsPos.y}
                                        editModeStatus={editMode}
                                        editModeHandler={editModeHandler}
-                                       deleteHandler={deleteElementHandler}/> : null}
+                                       deleteHandler={selectedElementId !== null ? deleteElementHandler : undefined}/> : null}
         </>
     )
 }
