@@ -56,6 +56,72 @@ const DashboardBase = (props: Props) => {
         return null;
     };
 
+    const areaFree = (
+        topIdx: number,
+        leftIdx: number,
+        widthCells: number,
+        heightCells: number,
+        occupied: Set<number>,
+    ): boolean => {
+        for (let r = topIdx; r < topIdx + heightCells; r++) {
+            for (let c = leftIdx; c < leftIdx + widthCells; c++) {
+                if (occupied.has(r * column + c)) return false;
+            }
+        }
+        return true;
+    };
+
+    const findSpotPriority = (
+        widthCells: number,
+        heightCells: number,
+        start: { top: number; left: number },
+        occupied: Set<number>,
+    ): { top: number; left: number } | null => {
+        for (let c = start.left + 1; c <= column - widthCells; c++) {
+            if (areaFree(start.top, c, widthCells, heightCells, occupied)) {
+                return { top: start.top, left: c };
+            }
+        }
+        for (let c = start.left - 1; c >= 0; c--) {
+            if (areaFree(start.top, c, widthCells, heightCells, occupied)) {
+                return { top: start.top, left: c };
+            }
+        }
+        for (let r = start.top + 1; r <= row - heightCells; r++) {
+            if (areaFree(r, start.left, widthCells, heightCells, occupied)) {
+                return { top: r, left: start.left };
+            }
+        }
+        for (let r = start.top - 1; r >= 0; r--) {
+            if (areaFree(r, start.left, widthCells, heightCells, occupied)) {
+                return { top: r, left: start.left };
+            }
+        }
+        return null;
+    };
+
+    const findNearestSpot = (
+        widthCells: number,
+        heightCells: number,
+        start: { top: number; left: number },
+        occupied: Set<number>,
+    ): { top: number; left: number } | null => {
+        let best: { top: number; left: number } | null = null;
+        let bestDist = Number.MAX_SAFE_INTEGER;
+        for (let r = 0; r <= row - heightCells; r++) {
+            for (let c = 0; c <= column - widthCells; c++) {
+                if (areaFree(r, c, widthCells, heightCells, occupied)) {
+                    const dist = Math.abs(r - start.top) + Math.abs(c - start.left);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = { top: r, left: c };
+                    }
+                }
+            }
+        }
+        return best;
+    };
+
     const handleResizeEnd = (
         id: number,
         cellsX: number,
@@ -142,6 +208,125 @@ const DashboardBase = (props: Props) => {
         return { width: newW, height: newH };
     };
 
+    const handleMoveEnd = (
+        id: number,
+        rowIdx: number,
+        colIdx: number,
+    ): { top: number; left: number } => {
+        setHighlightNodes(new Set());
+        const el = elements.find((e) => e.id === id);
+        if (!el) return { top: rowIdx, left: colIdx };
+        const newRow = Math.min(Math.max(0, rowIdx), row - el.height);
+        const newCol = Math.min(Math.max(0, colIdx), column - el.width);
+
+        const occupiedAll = new Map<number, number>();
+        elements.forEach((e) => {
+            if (e.id === id) return;
+            const p = getPosition(e.location);
+            if (!p) return;
+            for (let r = 0; r < e.height; r++) {
+                for (let c = 0; c < e.width; c++) {
+                    occupiedAll.set((p.top + r) * column + (p.left + c), e.id);
+                }
+            }
+        });
+
+        const colliding = new Set<number>();
+        for (let r = newRow; r < newRow + el.height; r++) {
+            for (let c = newCol; c < newCol + el.width; c++) {
+                const oid = occupiedAll.get(r * column + c);
+                if (oid !== undefined) colliding.add(oid);
+            }
+        }
+
+        if (colliding.size === 0) {
+            const loc = getLocation({ top: newRow, left: newCol });
+            if (loc !== undefined) {
+                setElements((prev) =>
+                    prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
+                );
+            }
+            return { top: newRow, left: newCol };
+        }
+
+        const finalOccupied = new Set<number>();
+        for (let r = newRow; r < newRow + el.height; r++) {
+            for (let c = newCol; c < newCol + el.width; c++) {
+                finalOccupied.add(r * column + c);
+            }
+        }
+        elements.forEach((e) => {
+            if (e.id === id || colliding.has(e.id)) return;
+            const p = getPosition(e.location);
+            if (!p) return;
+            for (let r = 0; r < e.height; r++) {
+                for (let c = 0; c < e.width; c++) {
+                    finalOccupied.add((p.top + r) * column + (p.left + c));
+                }
+            }
+        });
+
+        const updates: Record<number, number> = {};
+        let cannotResolve = false;
+        for (const cid of colliding) {
+            const e = elements.find((it) => it.id === cid);
+            if (!e) continue;
+            const pos = getPosition(e.location);
+            if (!pos) continue;
+            const spot = findSpotPriority(e.width, e.height, pos, finalOccupied);
+            if (!spot) {
+                cannotResolve = true;
+                break;
+            }
+            const loc2 = getLocation(spot);
+            if (loc2 === undefined) {
+                cannotResolve = true;
+                break;
+            }
+            updates[cid] = loc2;
+            for (let r = 0; r < e.height; r++) {
+                for (let c = 0; c < e.width; c++) {
+                    finalOccupied.add((spot.top + r) * column + (spot.left + c));
+                }
+            }
+        }
+
+        if (cannotResolve) {
+            const nearest = findNearestSpot(
+                el.width,
+                el.height,
+                { top: newRow, left: newCol },
+                new Set(occupiedAll.keys())
+            );
+            if (!nearest) {
+                const cur = getPosition(el.location);
+                return cur ? cur : { top: rowIdx, left: colIdx };
+            }
+            const loc = getLocation(nearest);
+            if (loc !== undefined) {
+                setElements((prev) =>
+                    prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
+                );
+            }
+            return { top: nearest.top, left: nearest.left };
+        }
+
+        const loc = getLocation({ top: newRow, left: newCol });
+        if (loc !== undefined) {
+            setElements((prev) =>
+                prev.map((e) => {
+                    if (e.id === id) return { ...e, location: loc };
+                    if (updates[e.id] !== undefined) {
+                        return { ...e, location: updates[e.id] };
+                    }
+                    return e;
+                }),
+            );
+        }
+
+        return { top: newRow, left: newCol };
+    };
+
     // 1. useRef 대신 useMemo를 사용하여 props 변경 시에도 크기가 재계산되도록 합니다.
     const nodeSize = useMemo(() => {
         return NLC(props)
@@ -212,13 +397,15 @@ const DashboardBase = (props: Props) => {
                                  height={nodeSize.height * el.height + (gap * (el.height - 1))}
                                  radius={props.radius}
                                  edit={props.edit}
-                                 nodeWidth={nodeSize.width}
-                                 nodeHeight={nodeSize.height}
-                                 gap={gap}
-                                 column={column}
-                                 onHighlight={handleHighlight}
-                                 onResizeEnd={handleResizeEnd}
-                                 key={el.id}/>
+                                nodeWidth={nodeSize.width}
+                                nodeHeight={nodeSize.height}
+                                gap={gap}
+                                column={column}
+                                row={row}
+                                onHighlight={handleHighlight}
+                                onResizeEnd={handleResizeEnd}
+                                onMoveEnd={handleMoveEnd}
+                                key={el.id}/>
                 )
             })}
         </_.DashboardBase>

@@ -19,7 +19,7 @@ export const ElementWrapper = styled.div<ElementWrapperProps>`
     overflow: hidden;
 `
 
-export const Handle = styled.div`
+export const SiezeHandle = styled.div`
     width: 10px;
     height: 40px;
     background-color: gray;
@@ -27,6 +27,19 @@ export const Handle = styled.div`
     right: 0;
     bottom: 0;
     transform: rotate(45deg) translateX(70%) translateY(25%);
+    &:hover {
+        cursor: move;
+    }
+`
+
+export const MoveHandle = styled.div`
+    width: 10px;
+    height: 40px;
+    background-color: gray;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: rotate(45deg) translate(-70%, -25%);
     &:hover {
         cursor: move;
     }
