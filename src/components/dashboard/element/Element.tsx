@@ -15,11 +15,14 @@ type Props = {
     column: number
     onHighlight?: (locations: number[]) => void
     onResizeEnd?: (id: number, cellsX: number, cellsY: number) => { width: number; height: number } | void
+    onMoveEnd?: (id: number, row: number, col: number) => { top: number; left: number } | void
 }
 
 const Element = (props: Props) => {
     const [width, setWidth] = useState(props.width);
     const [height, setHeight] = useState(props.height);
+    const [top, setTop] = useState(props.top);
+    const [left, setLeft] = useState(props.left);
 
     useEffect(() => {
         setWidth(props.width);
@@ -29,8 +32,20 @@ const Element = (props: Props) => {
         setHeight(props.height);
     }, [props.height]);
 
+    useEffect(() => {
+        setTop(props.top);
+    }, [props.top]);
+
+    useEffect(() => {
+        setLeft(props.left);
+    }, [props.left]);
+
     const startX = useRef(0);
     const startY = useRef(0);
+    const moveStartX = useRef(0);
+    const moveStartY = useRef(0);
+    const startTop = useRef(0);
+    const startLeft = useRef(0);
     const startWidth = useRef(0);
     const startHeight = useRef(0);
     const currentWidth = useRef(0);
@@ -47,6 +62,16 @@ const Element = (props: Props) => {
 
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleMoveDown = (e: React.MouseEvent) => {
+        e.preventDefault();
+        moveStartX.current = e.clientX;
+        moveStartY.current = e.clientY;
+        startTop.current = top;
+        startLeft.current = left;
+        window.addEventListener('mousemove', handleMoveMove);
+        window.addEventListener('mouseup', handleMoveUp);
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -78,6 +103,31 @@ const Element = (props: Props) => {
         setHeight(newHeight);
     };
 
+    const handleMoveMove = (e: MouseEvent) => {
+        const deltaX = e.clientX - moveStartX.current;
+        const deltaY = e.clientY - moveStartY.current;
+        const newTop = startTop.current + deltaY;
+        const newLeft = startLeft.current + deltaX;
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellH = props.nodeHeight + props.gap;
+        const cellsX = Math.max(1, Math.round((width + props.gap) / cellW));
+        const cellsY = Math.max(1, Math.round((height + props.gap) / cellH));
+
+        const row = Math.round(newTop / cellH);
+        const col = Math.round(newLeft / cellW);
+        const highlights: number[] = [];
+        for (let r = row; r < row + cellsY; r++) {
+            for (let c = col; c < col + cellsX; c++) {
+                highlights.push(r * props.column + c);
+            }
+        }
+        props.onHighlight?.(highlights);
+
+        setTop(newTop);
+        setLeft(newLeft);
+    };
+
     const handleMouseUp = () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
@@ -101,16 +151,43 @@ const Element = (props: Props) => {
         props.onHighlight?.([]);
     };
 
+    const handleMoveUp = () => {
+        window.removeEventListener('mousemove', handleMoveMove);
+        window.removeEventListener('mouseup', handleMoveUp);
+
+        const cellW = props.nodeWidth + props.gap;
+        const cellH = props.nodeHeight + props.gap;
+        const row = Math.round(top / cellH);
+        const col = Math.round(left / cellW);
+
+        let finalRow = row;
+        let finalCol = col;
+        if (props.onMoveEnd) {
+            const res = props.onMoveEnd(props.id, row, col);
+            if (res) {
+                finalRow = res.top;
+                finalCol = res.left;
+            }
+        }
+
+        setTop(finalRow * cellH);
+        setLeft(finalCol * cellW);
+        props.onHighlight?.([]);
+    };
+
     return (
         <_.ElementWrapper
-            top={props.top}
-            left={props.left}
+            top={top}
+            left={left}
             width={width}
             height={height}
             radius={props.radius}
         >
             {props.edit ? (
-                <_.Handle onMouseDown={handleMouseDown} />
+                <>
+                    <_.MoveHandle onMouseDown={handleMoveDown} />
+                    <_.Handle onMouseDown={handleMouseDown} />
+                </>
             ) : null}
         </_.ElementWrapper>
     );

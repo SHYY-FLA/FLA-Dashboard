@@ -142,6 +142,25 @@ const DashboardBase = (props: Props) => {
         return { width: newW, height: newH };
     };
 
+    const handleMoveEnd = (
+        id: number,
+        rowIdx: number,
+        colIdx: number,
+    ): { top: number; left: number } => {
+        setHighlightNodes(new Set());
+        const el = elements.find((e) => e.id === id);
+        if (!el) return { top: rowIdx, left: colIdx };
+        const newRow = Math.min(Math.max(0, rowIdx), row - el.height);
+        const newCol = Math.min(Math.max(0, colIdx), column - el.width);
+        const loc = getLocation({ top: newRow, left: newCol });
+        if (loc !== undefined) {
+            setElements((prev) =>
+                prev.map((e) => (e.id === id ? { ...e, location: loc } : e)),
+            );
+        }
+        return { top: newRow, left: newCol };
+    };
+
     // 1. useRef 대신 useMemo를 사용하여 props 변경 시에도 크기가 재계산되도록 합니다.
     const nodeSize = useMemo(() => {
         return NLC(props)
@@ -216,9 +235,10 @@ const DashboardBase = (props: Props) => {
                                  nodeHeight={nodeSize.height}
                                  gap={gap}
                                  column={column}
-                                 onHighlight={handleHighlight}
-                                 onResizeEnd={handleResizeEnd}
-                                 key={el.id}/>
+                                onHighlight={handleHighlight}
+                                onResizeEnd={handleResizeEnd}
+                                onMoveEnd={handleMoveEnd}
+                                key={el.id}/>
                 )
             })}
         </_.DashboardBase>
