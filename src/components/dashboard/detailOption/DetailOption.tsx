@@ -1,6 +1,6 @@
 import * as _ from './style.ts'
 
-type Props = {
+interface Props {
     x: number
     y: number
     editModeStatus: boolean
@@ -12,7 +12,7 @@ const DetailOption = (props: Props) => {
     return (
         <_.OptionsContainer x={props.x} y={props.y}>
             <_.Option onClick={props.editModeHandler}>
-                <_.OptionTitle>{props.editModeStatus?'수정 완료':'수정 하기'}</_.OptionTitle>
+                <_.OptionTitle>{props.editModeStatus ? '수정 완료' : '수정 하기'}</_.OptionTitle>
             </_.Option>
             {props.deleteHandler && (
                 <_.Option onClick={props.deleteHandler}>
