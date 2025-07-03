@@ -195,6 +195,7 @@ const Element = (props: Props) => {
             radius={props.radius}
             onContextMenu={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 props.onContextMenu?.(e, props.id);
             }}
         >

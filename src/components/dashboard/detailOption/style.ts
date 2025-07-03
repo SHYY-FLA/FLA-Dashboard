@@ -1,6 +1,6 @@
-import styled from "styled-components";
+import styled from "styled-components"
 
-type OptionsContainerProps = {
+interface OptionsContainerProps {
     x: number
     y: number
 }

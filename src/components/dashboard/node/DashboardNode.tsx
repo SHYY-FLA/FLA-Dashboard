@@ -24,6 +24,7 @@ const DashboardNode = (props: Props) => {
                          className={"_FLA_DASHBOARD_BASE"}
                          onContextMenu={(e) => {
                              e.preventDefault()
+                             e.stopPropagation()
                              props.onContextMenu?.(e, props.location)
                          }}>
             {
