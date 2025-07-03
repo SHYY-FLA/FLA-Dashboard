@@ -1,12 +1,12 @@
 import * as _ from './style.ts'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import DashboardNode from '../node/DashboardNode.tsx'
 import { addMapping, getPosition, NLC } from '../NodeLocationCalculation.ts'
 import Element from '../element/Element.tsx'
-import type { DashboardBaseProps, ElementData } from './types.ts'
+import type { DashboardBaseProps, ElementData, DashboardBaseHandle } from './types.ts'
 import { handleResizeEnd, handleMoveEnd } from './handlers/index.ts'
 
-const DashboardBase = (props: DashboardBaseProps) => {
+const DashboardBase = forwardRef<DashboardBaseHandle, DashboardBaseProps>((props, ref) => {
     const { width, height, column, row, gap = 8 } = props
 
     const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set())
@@ -34,6 +34,12 @@ const DashboardBase = (props: DashboardBaseProps) => {
 
     const onMoveEnd = (id: number, rowIdx: number, colIdx: number) =>
         handleMoveEnd(id, rowIdx, colIdx, column, row, elements, setElements, setHighlightNodes)
+
+    useImperativeHandle(ref, () => ({
+        deleteElement: (id: number) => {
+            setElements(prev => prev.filter(el => el.id !== id))
+        },
+    }))
 
     return (
         <_.DashboardBase
@@ -91,12 +97,13 @@ const DashboardBase = (props: DashboardBaseProps) => {
                             onHighlight={handleHighlight}
                             onResizeEnd={onResizeEnd}
                             onMoveEnd={onMoveEnd}
+                            onContextMenu={props.onElementContextMenu}
                             key={el.id}
                         />
                     )
             })}
         </_.DashboardBase>
     )
-}
+})
 
 export default DashboardBase

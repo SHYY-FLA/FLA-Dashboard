@@ -1,7 +1,8 @@
 import './App.css'
 import DashboardBase from "./components/dashboard/base/DashboardBase.tsx";
+import type { DashboardBaseHandle } from "./components/dashboard/base/types.ts";
 import DetailOption from "./components/dashboard/detailOption/DetailOption.tsx";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef} from "react";
 
 type DetailOptionsPos = {
     x: number
@@ -11,14 +12,23 @@ type DetailOptionsPos = {
 const App = () => {
     const [viewOptions, setViewOptions] = useState(false)
     const [editMode, setEditMode] = useState(false)
-    // const detailOptionsPos = useRef<DetailOptionsPos>({ x: 0, y: 0 })
     const [detailOptionsPos, setDetailOptionsPos] = useState<DetailOptionsPos>({ x: 0, y: 0 })
+    const [selectedElementId, setSelectedElementId] = useState<number | null>(null)
+    const dashboardRef = useRef<DashboardBaseHandle>(null)
 
-    const handleContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
+    const handleElementContextMenu = (e: React.MouseEvent, id: number) => {
+        e.preventDefault()
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
-        setViewOptions(true);
-    };
+        setSelectedElementId(id)
+        setViewOptions(true)
+    }
+
+    const deleteElementHandler = () => {
+        if (selectedElementId !== null) {
+            dashboardRef.current?.deleteElement(selectedElementId)
+            setViewOptions(false)
+        }
+    }
 
     const editModeHandler = () => {
         setEditMode(!editMode);
@@ -48,11 +58,13 @@ const App = () => {
                            primary={"#007BFF"}
                            background={"white"}
                            edit={editMode}
-                           onContextMenu={handleContextMenu}/>
-            {viewOptions? <DetailOption x={detailOptionsPos.x}
-                                        y={detailOptionsPos.y}
-                                        editModeStatus={editMode}
-                                        editModeHandler={editModeHandler}/> : null}
+                           ref={dashboardRef}
+                           onElementContextMenu={handleElementContextMenu}/>
+           {viewOptions? <DetailOption x={detailOptionsPos.x}
+                                       y={detailOptionsPos.y}
+                                       editModeStatus={editMode}
+                                       editModeHandler={editModeHandler}
+                                       deleteHandler={deleteElementHandler}/> : null}
         </>
     )
 }
