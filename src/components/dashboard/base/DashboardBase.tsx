@@ -4,10 +4,11 @@ import DashboardNode from '../node/DashboardNode.tsx'
 import { addMapping, getPosition, NLC } from '../NodeLocationCalculation.ts'
 import Element from '../element/Element.tsx'
 import type { DashboardBaseProps, ElementData } from './types.ts'
+import ApexChart from '../../ApexChart.tsx'
 import { handleResizeEnd, handleMoveEnd } from './handlers/index.ts'
 
 const DashboardBase = (props: DashboardBaseProps) => {
-    const { width, height, column, row, gap = 8 } = props
+    const { width, height, column, row, gap = 8, chartData } = props
 
     const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set())
 
@@ -92,7 +93,9 @@ const DashboardBase = (props: DashboardBaseProps) => {
                             onResizeEnd={onResizeEnd}
                             onMoveEnd={onMoveEnd}
                             key={el.id}
-                        />
+                        >
+                            {el.id === 0 ? <ApexChart data={chartData} /> : null}
+                        </Element>
                     )
             })}
         </_.DashboardBase>

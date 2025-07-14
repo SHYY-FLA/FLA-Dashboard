@@ -1,5 +1,5 @@
 import * as _ from './style.ts'
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 
 type Props = {
     id: number
@@ -17,6 +17,7 @@ type Props = {
     onHighlight?: (locations: number[]) => void
     onResizeEnd?: (id: number, cellsX: number, cellsY: number) => { width: number; height: number } | void
     onMoveEnd?: (id: number, row: number, col: number) => { top: number; left: number } | void
+    children?: ReactNode
 }
 
 const Element = (props: Props) => {
@@ -193,6 +194,7 @@ const Element = (props: Props) => {
             height={height}
             radius={props.radius}
         >
+            {props.children}
             {props.edit ? (
                 <>
                     <_.MoveHandle onMouseDown={handleMoveDown} />
