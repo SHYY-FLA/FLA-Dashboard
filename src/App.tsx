@@ -13,6 +13,11 @@ const App = () => {
     const [editMode, setEditMode] = useState(false)
     // const detailOptionsPos = useRef<DetailOptionsPos>({ x: 0, y: 0 })
     const [detailOptionsPos, setDetailOptionsPos] = useState<DetailOptionsPos>({ x: 0, y: 0 })
+    const [chartData, setChartData] = useState<number[]>([10, 20, 30])
+
+    const addChartData = () => {
+        setChartData(prev => [...prev, Math.floor(Math.random() * 100)])
+    }
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -48,7 +53,9 @@ const App = () => {
                            primary={"#007BFF"}
                            background={"white"}
                            edit={editMode}
-                           onContextMenu={handleContextMenu}/>
+                           onContextMenu={handleContextMenu}
+                           chartData={chartData}/>
+            <button onClick={addChartData}>데이터 추가</button>
             {viewOptions? <DetailOption x={detailOptionsPos.x}
                                         y={detailOptionsPos.y}
                                         editModeStatus={editMode}

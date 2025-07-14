@@ -9,6 +9,7 @@ export type DashboardBaseProps = {
     primary?: string
     edit?: boolean
     onContextMenu?: (e: React.MouseEvent) => void
+    chartData: number[]
 }
 
 export type ElementData = {
