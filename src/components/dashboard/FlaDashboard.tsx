@@ -16,7 +16,7 @@ type Props = {
     element: ElementData[]
 }
 
-const Dashboard = (p: Props) => {
+const FlaDashboard = (p: Props) => {
     const [viewOptions, setViewOptions] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [detailOptionsPos, setDetailOptionsPos] = useState<DetailOptionsPos>({ x: 0, y: 0 })
@@ -108,4 +108,4 @@ const Dashboard = (p: Props) => {
     )
 }
 
-export default Dashboard
+export default FlaDashboard

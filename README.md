@@ -1,4 +1,4 @@
-# FLA Dashboard
+# FLA FlaDashboard
 
 A set of React components for building customizable dashboard layouts.
 

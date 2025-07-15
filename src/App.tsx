@@ -1,9 +1,9 @@
 import './App.css'
-import Dashboard from "./components/dashboard/Dashboard.tsx";
+import FlaDashboard from "./components/dashboard/FlaDashboard.tsx";
 
 const App = () => {
     return (
-        <Dashboard width={1000} height={1000} column={10} row={10} element={[
+        <FlaDashboard width={1000} height={1000} column={10} row={10} element={[
             {id: 1, location: 1, width: 2, height: 2,}
         ]} />
     )
