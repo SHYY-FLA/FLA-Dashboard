@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react(), dts(), svgr()],
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/main.tsx"),
+      entry: path.resolve(__dirname, "src/index.ts"),
       name: "fla-dashboard",
       fileName: "index",
     },
