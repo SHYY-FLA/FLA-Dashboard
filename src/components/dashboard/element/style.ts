@@ -10,7 +10,8 @@ type ElementWrapperProps = {
 
 export const ElementWrapper = styled.div<ElementWrapperProps>`
     position: absolute;
-    background-color: aqua;
+    border: 0.943px solid #007BFF;
+    background: rgba(0, 123, 255, 0.20);
     width: ${props => `${props.width}px`};
     height: ${props => `${props.height}px`};
     top: ${props => `${props.top}px`};
