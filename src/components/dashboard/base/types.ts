@@ -11,7 +11,7 @@ export type DashboardBaseProps = {
     onContextMenu?: (e: React.MouseEvent) => void
     onElementContextMenu?: (e: React.MouseEvent, id: number) => void
     onNodeContextMenu?: (e: React.MouseEvent, location: number) => void
-    element?: ElementData[]
+    element: ElementData[]
 }
 
 export type DashboardBaseHandle = {
