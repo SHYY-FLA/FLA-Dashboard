@@ -2,6 +2,7 @@ import DashboardBase from "../../components/dashboard/base/DashboardBase.tsx";
 import type {DashboardBaseHandle, ElementData} from "./base/types.ts";
 import DetailOption from "../../components/dashboard/detailOption/DetailOption.tsx";
 import {useEffect, useState, useRef} from "react";
+import { createPortal } from "react-dom";
 
 type DetailOptionsPos = {
     x: number
@@ -26,7 +27,6 @@ const FlaDashboard = (p: Props) => {
     const handleBaseContextMenu = (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
-        console.log('Base context menu triggered: ', e.clientX, e.clientY)
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         setSelectedElementId(null)
         setViewOptions(true)
@@ -35,7 +35,6 @@ const FlaDashboard = (p: Props) => {
     const handleElementContextMenu = (e: React.MouseEvent, id: number) => {
         e.preventDefault()
         e.stopPropagation()
-        console.log('Element context menu triggered', id)
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         setSelectedElementId(id)
         setViewOptions(true)
@@ -44,7 +43,6 @@ const FlaDashboard = (p: Props) => {
     const handleNodeContextMenu = (e: React.MouseEvent, location: number) => {
         e.preventDefault()
         e.stopPropagation()
-        console.log('Node context menu triggered', location)
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         const id = dashboardRef.current?.getElementIdAtLocation(location) ?? null
         setSelectedElementId(id)
@@ -81,29 +79,39 @@ const FlaDashboard = (p: Props) => {
         }
     }, [])
 
+    // --------- 포탈 렌더링 부분(핵심) ----------
+    const detailOptionPortal = viewOptions
+        ? createPortal(
+            <DetailOption
+                x={detailOptionsPos.x}
+                y={detailOptionsPos.y}
+                editModeStatus={editMode}
+                editModeHandler={editModeHandler}
+                deleteHandler={selectedElementId !== null ? deleteElementHandler : undefined}
+            />,
+            document.body
+        )
+        : null;
+
     return (
         <>
-            <DashboardBase width={p.width}
-                           height={p.height}
-                           column={p.column}
-                           row={p.row}
-                           radius={15}
-                           gap={16}
-                           primary={"#007BFF"}
-                           background={"white"}
-                           edit={editMode}
-                           ref={dashboardRef}
-                           onContextMenu={handleBaseContextMenu}
-                           onElementContextMenu={handleElementContextMenu}
-                           onNodeContextMenu={handleNodeContextMenu}
-                           element={[
-                               // {id: 1, location: 1, width: 2, height: 2,}
-                           ]}/>
-            {viewOptions? <DetailOption x={detailOptionsPos.x}
-                                        y={detailOptionsPos.y}
-                                        editModeStatus={editMode}
-                                        editModeHandler={editModeHandler}
-                                        deleteHandler={selectedElementId !== null ? deleteElementHandler : undefined}/> : null}
+            <DashboardBase
+                width={p.width}
+                height={p.height}
+                column={p.column}
+                row={p.row}
+                radius={15}
+                gap={16}
+                primary={"#007BFF"}
+                background={"white"}
+                edit={editMode}
+                ref={dashboardRef}
+                onContextMenu={handleBaseContextMenu}
+                onElementContextMenu={handleElementContextMenu}
+                onNodeContextMenu={handleNodeContextMenu}
+                element={[]}
+            />
+            {detailOptionPortal}
         </>
     )
 }
