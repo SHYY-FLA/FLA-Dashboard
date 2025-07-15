@@ -1,6 +1,6 @@
 {
   "name": "fla-dashboard",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -29,7 +29,9 @@
   "dependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-svg": "^16.3.0",
+    "react-svg": "^16.3.0"
+  },
+  "peerDependencies": {
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
