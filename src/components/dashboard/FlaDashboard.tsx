@@ -26,7 +26,7 @@ const FlaDashboard = (p: Props) => {
     const handleBaseContextMenu = (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
-        console.log('Base context menu triggered')
+        console.log('Base context menu triggered: ', e.clientX, e.clientY)
         setDetailOptionsPos({ x: e.clientX, y: e.clientY })
         setSelectedElementId(null)
         setViewOptions(true)
