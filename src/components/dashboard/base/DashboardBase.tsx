@@ -7,7 +7,7 @@ import type { DashboardBaseProps, ElementData, DashboardBaseHandle } from './typ
 import { handleResizeEnd, handleMoveEnd } from './handlers/index.ts'
 
 const DashboardBase = forwardRef<DashboardBaseHandle, DashboardBaseProps>((props, ref) => {
-    const { width, height, column, row, gap = 8 } = props
+    const { width, height, column, row, gap = 8, element} = props
 
     const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set())
 
@@ -17,10 +17,7 @@ const DashboardBase = forwardRef<DashboardBaseHandle, DashboardBaseProps>((props
 
     const [nextId, setNextId] = useState<number>(2)
 
-    const [elements, setElements] = useState<ElementData[]>([
-        { id: 0, location: 0, width: 2, height: 1 },
-        { id: 1, location: 3, width: 1, height: 2 },
-    ])
+    const [elements, setElements] = useState<ElementData[]>(props.element)
 
     const nodeSize = useMemo(() => NLC(props), [props])
 

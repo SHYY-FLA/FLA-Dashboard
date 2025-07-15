@@ -89,7 +89,9 @@ const App = () => {
                            ref={dashboardRef}
                            onContextMenu={handleBaseContextMenu}
                            onElementContextMenu={handleElementContextMenu}
-                           onNodeContextMenu={handleNodeContextMenu}/>
+                           onNodeContextMenu={handleNodeContextMenu}
+                           element={[{ id: 0, location: 0, width: 2, height: 1 },
+                                     { id: 1, location: 3, width: 1, height: 2 },]}/>
            {viewOptions? <DetailOption x={detailOptionsPos.x}
                                        y={detailOptionsPos.y}
                                        editModeStatus={editMode}
