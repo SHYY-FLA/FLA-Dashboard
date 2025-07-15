@@ -1,6 +1,6 @@
-import styled from "styled-components";
+import styled from "styled-components"
 
-type OptionsContainerProps = {
+interface OptionsContainerProps {
     x: number
     y: number
 }
@@ -9,7 +9,6 @@ export const OptionsContainer = styled.div<OptionsContainerProps>`
     border-radius: 8px;
     overflow: hidden;
     display: inline-block;
-    height: 40px;
     position: fixed;
     top: ${(props) => `${props.y}px`};
     left: ${(props) => `${props.x}px`};
@@ -20,8 +19,13 @@ export const Option = styled.div`
     height: 40px;
     background-color: #007BFF;
     color: white;
-    display: inline-block;
+    display: flex;
+    align-items: center;
     position: relative;
+    cursor: pointer;
+    &:not(:last-child){
+        border-bottom: 1px solid white;
+    }
 `
 
 export const OptionTitle = styled.div`
